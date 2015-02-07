@@ -18,6 +18,7 @@ void init_screen(void){
  * crazy shifting is to set up every color 
  */
 void init_colors(void) {
+  int i;
   start_color();
   for (i = 0; i < (1 << 8); i ++) {
     int r = i >> 5;
@@ -38,7 +39,7 @@ static inline int get_color(int r, int g, int b) {
   return 16+r/48*36+g/48*6+b/48; 
 }
 
-const char *ascii_values = " .:-=+oo*#%@";
+const char *ascii_values = " .:-=+|]*#%@";
 /* vector drawer
  */
 //int n3_draw_image(char *data, int width, int height) {

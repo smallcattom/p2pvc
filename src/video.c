@@ -6,7 +6,7 @@
 #define VIDEO_WIDTH 100
 #define VIDEO_HEIGHT 40
 
-#ifdef VIDEOONLY
+//#ifdef VIDEOONLY
 
 int main(void) {
   init_screen();
@@ -34,4 +34,4 @@ int main(void) {
   end_screen();
   return 0;
 }
-#endif
+//#endif
