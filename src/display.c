@@ -53,8 +53,8 @@ int draw_image(char *data, int width, int height, int step, int channels) {
   unsigned char b, g, r;
   int offset = 0;
   int intensity;
-  for (y = 0; y < height && y < LINES; y++){
-    for (x = 0; x < width && x < COLS; x++){
+  for (y = 0; y < height && y < LINES; y += 4) {
+    for (x = 0; x < width && x < COLS; x++) {
       b = data[step * y + x * channels] + offset;
       g = data[step * y + x * channels + 1] + offset;
       r = data[step * y + x * channels + 2] + offset;
@@ -72,26 +72,48 @@ int draw_image(char *data, int width, int height, int step, int channels) {
   refresh();
   return 0;
 }
-
+braille_values =
 int draw_image_braille(char *data, int width, int height, int step, int channels) {
   char ascii_image[width*height];
-  int y, x;
+  float threshold = 0.8;
+  float intensity;
+  int y, x; // Index of top left pixel of block
+  int col, row; //Index of pixel in block
+  int block_height = 4;
+  int block_width = 2
+  int color_offset = 0;
   unsigned char b, g, r;
-  int offset = 0;
-  int intensity;
-  for (y=0; y < height && y < LINES; y++){
-    for (x=0; x < width && x < COLS; x++){
-      b = data[step * y + x * channels] + offset;
-      g = data[step * y + x * channels + 1] + offset;
-      r = data[step * y + x * channels + 2] + offset;
-      //intensity = abs((int)(0.2126*r + 0.7152*g + 0.0722*b));
-      intensity = (sizeof(ascii_values) - 1) * ((r/255.0 + g/255.0 + b/255.0) / 3);
-      ascii_image[y * width + x] = ascii_values[intensity];
-      int color = get_color(r, g, b);
+  unsigned int block_b, block_g, block_r;
+  unsigned char block_binary = 0b0;
+  for (y = 0; y < height - block_height && y < LINES - block_height; y+= block_height) {
+    for (x = 0; x < width - block_width && x < LINES - block_width; x+= block_width) {
+      // (x, y) is now the index of top left of 2x4 pixel block
+      block_binary = 0b0;
+      block_b = block_g = block_r = 0;
+      for (col = 0; col < block_height; col++) {
+        for (row = 0; row < block_width; row++) {
+          b = data[step * (col + y) + (row + x) * channels] + color_offset;
+          g = data[step * y + (row + x) * channels + 1] + color_offset;
+          r = data[step * y + (row + x) * channels + 2] + color_offset;
+          intensity = (r/255.0 + g/255.0 + b/255.0) / 3;
+          if (intensity > threshold) {
+            block_binary |= 1 << ((col*block_height) + row);
+          }
+          block_b += b;
+          block_g += g;
+          block_r += r;
+        }
+      }
+      // Average of block's rgb
+      int color = get_color(
+        (int) block_r / (block_width*block_height), 
+        (int) block_g / (block_width*block_height),
+        (int) block_b / (block_width*block_height));
       if (COLORS < 255) {
         color = 0;
       }
-      mvaddch(y, x, ascii_image[y * width + x]|COLOR_PAIR(color));
+      //mvaddch(y, x, ascii_image[y * width + x]|COLOR_PAIR(color));
+      mvaddstr(1, 0, "\xe2\x9c\x93");
     }
   } 
 
